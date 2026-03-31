@@ -37,7 +37,23 @@ Presets are calibrated from real inflight benchmarks — TLS handshake timing, d
 | `american`    | ~358ms | 4.2 Mbps  | 0.5% | 1400ms     | American Airlines Intelsat GEO (regional US)     |
 | `turkish-air` | ~435ms | 86 KB/s   | 0.5% | 2300ms     | Turkish Airlines Panasonic Ku-band GEO (JFK→IST) |
 
-More presets will be added as we collect data from additional airlines and routes. You can also define custom profiles with arbitrary parameters via the menu bar app or CLI.
+You can also define custom profiles with arbitrary parameters via the menu bar app or CLI.
+
+### Contribute a preset
+
+On your next flight, run the benchmarking script to collect raw network data:
+
+```bash
+sudo ./scripts/flight-bench.sh cruising
+```
+
+This captures TLS handshake timing, bandwidth, traceroute, and packet loss across multiple targets. Output goes to `./traces/` as JSON. Open an issue or PR with your trace file and we'll fit a profile from the data — include the airline, route, and satellite provider if you know it.
+
+Optionally, set `YOUR_SERVER` to a host you control for PEP (Performance Enhancing Proxy) detection:
+
+```bash
+sudo YOUR_SERVER=myserver.example.com ./scripts/flight-bench.sh cruising
+```
 
 ## Quick Start
 
