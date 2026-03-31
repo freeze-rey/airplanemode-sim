@@ -41,13 +41,16 @@ You can also define custom profiles with arbitrary parameters via the menu bar a
 
 ### Contribute a preset
 
-On your next flight, run the benchmarking script to collect raw network data:
+On your next flight, run the benchmarking script to collect raw network data. Run it multiple times during the flight — conditions change significantly between phases (climb, cruise, descent) and as passengers connect/disconnect:
 
 ```bash
-sudo ./scripts/flight-bench.sh cruising
+sudo ./scripts/flight-bench.sh takeoff
+sudo ./scripts/flight-bench.sh cruising-1h
+sudo ./scripts/flight-bench.sh cruising-3h
+sudo ./scripts/flight-bench.sh descent
 ```
 
-This captures TLS handshake timing, bandwidth, traceroute, and packet loss across multiple targets. Output goes to `./traces/` as JSON. Open an issue or PR with your trace file and we'll fit a profile from the data — include the airline, route, and satellite provider if you know it.
+This captures TLS handshake timing, bandwidth, traceroute, and packet loss across multiple targets. Output goes to `./traces/` as JSON. Open an issue or PR with your trace files and we'll fit a profile from the data — include the airline, route, and satellite provider if you know it.
 
 Optionally, set `YOUR_SERVER` to a host you control for PEP (Performance Enhancing Proxy) detection:
 
