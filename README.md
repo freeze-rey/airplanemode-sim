@@ -2,6 +2,8 @@
 
 A macOS network profiler that simulates real airplane WiFi. Routes system traffic for matched domains through a local relay that applies packet-level profiling — calibrated from actual inflight measurements.
 
+<img src="screenshot.png" alt="AirplaneMode menu bar app" width="300">
+
 ## The Problem
 
 I needed to test how my app performed on airplane WiFi. The existing tools all fell short:
@@ -31,8 +33,8 @@ Presets are calibrated from real inflight benchmarks — TLS handshake timing, d
 
 | Preset        | RTT    | Bandwidth | Loss | Jitter P99 | Source                                           |
 | ------------- | ------ | --------- | ---- | ---------- | ------------------------------------------------ |
-| `starlink`    | ~50ms  | 500 KB/s  | 1.0% | 80ms       | Starlink LEO satellite                           |
 | `jetblue`     | ~296ms | 3.3 Mbps  | 0.5% | 1050ms     | JetBlue Viasat Ka-band (DEN PoP, domestic US)    |
+| `american`    | ~358ms | 4.2 Mbps  | 0.5% | 1400ms     | American Airlines Intelsat GEO (regional US)     |
 | `turkish-air` | ~435ms | 86 KB/s   | 0.5% | 2300ms     | Turkish Airlines Panasonic Ku-band GEO (JFK→IST) |
 
 More presets will be added as we collect data from additional airlines and routes. You can also define custom profiles with arbitrary parameters via the menu bar app or CLI.
