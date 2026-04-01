@@ -52,11 +52,6 @@ sudo ./scripts/flight-bench.sh descent
 
 This captures TLS handshake timing, bandwidth, traceroute, and packet loss across multiple targets. Output goes to `./traces/` as JSON. Open an issue or PR with your trace files and we'll fit a profile from the data — include the airline, route, and satellite provider if you know it.
 
-Optionally, set `YOUR_SERVER` to a host you control for PEP (Performance Enhancing Proxy) detection:
-
-```bash
-sudo YOUR_SERVER=myserver.example.com ./scripts/flight-bench.sh cruising
-```
 
 ## Quick Start
 
