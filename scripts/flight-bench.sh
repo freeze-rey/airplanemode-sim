@@ -38,7 +38,8 @@ probe_traceroute() {
 		>"$BENCH_TMP/trace-udp-$host.txt" 2>&1 || true
 	# TCP traceroute (port 443) is more reliable on restrictive networks but needs sudo
 	if sudo -n true 2>/dev/null; then
-		sudo traceroute -T -p 443 -n -w 5 -q 3 -m 20 "$host" \
+		# macOS traceroute uses -P TCP (not -T which is Linux-only)
+		sudo traceroute -P TCP -p 443 -n -w 5 -q 3 -m 20 "$host" \
 			2>&1 | tee "$BENCH_TMP/trace-tcp-$host.txt" >/dev/null || true
 	else
 		echo "SKIPPED: sudo required" >"$BENCH_TMP/trace-tcp-$host.txt"
@@ -94,6 +95,20 @@ probe_bandwidth_up() {
 echo "=== flight-bench — label=$LABEL ==="
 echo ""
 
+# Pre-seed all expected output files so jq assembly never fails,
+# even if a background job errors or the temp dir races.
+for host in 1.1.1.1 api.anthropic.com; do
+	echo "NOT_CAPTURED" >"$BENCH_TMP/dns-$host.txt"
+	echo "NOT_CAPTURED" >"$BENCH_TMP/trace-udp-$host.txt"
+	echo "NOT_CAPTURED" >"$BENCH_TMP/trace-tcp-$host.txt"
+done
+for f in rtt-1.1.1.1.jsonl rtt-api.anthropic.com.jsonl bw-down.jsonl bw-up.jsonl; do
+	touch "$BENCH_TMP/$f"
+done
+echo "NOT_CAPTURED" >"$BENCH_TMP/cf-trace.txt"
+echo "NOT_CAPTURED" >"$BENCH_TMP/uname.txt"
+date -u +%Y-%m-%dT%H:%M:%SZ >"$BENCH_TMP/timestamp.txt"
+
 netstat -s -p tcp >"$BENCH_TMP/netstat-before.txt" 2>&1 || true
 
 echo "--- Parallel: metadata + traceroute + RTT ---"
@@ -118,10 +133,6 @@ netstat -s -p tcp >"$BENCH_TMP/netstat-after.txt" 2>&1 || true
 
 mkdir -p "$OUTDIR"
 OUTFILE="$OUTDIR/flight-$(date +%Y%m%d-%H%M%S)-${LABEL}.json"
-
-for f in rtt-1.1.1.1.jsonl rtt-api.anthropic.com.jsonl bw-down.jsonl bw-up.jsonl; do
-	touch "$BENCH_TMP/$f"
-done
 
 jq -n \
 	--arg label "$LABEL" \

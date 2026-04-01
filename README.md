@@ -8,15 +8,15 @@ A macOS network profiler that simulates real airplane WiFi. Routes system traffi
 
 I needed to test how my app performed on airplane WiFi. The existing tools all fell short:
 
-1. **Uniform jitter.** Real satellite WiFi has heavy-tailed latency: most packets arrive near base RTT, but a few percent spike to 5-10x. Flight benchmarks show this follows a log-normal distribution, not uniform noise. Existing tools (Apple's Network Link Conditioner, `tc netem`, `comcast`) model jitter as uniform, which misses the spikes that actually break user experience.
+1. **No jitter model.** Real satellite WiFi has heavy-tailed latency: most packets arrive near base RTT, but a few percent spike to 5-10x. Flight benchmarks show this follows a log-normal distribution. Existing macOS tools (Apple's Network Link Conditioner, `comcast`) apply fixed constant delay with no jitter model at all, which misses the spikes that actually break user experience.
 
-2. **No HTTP/3 support.** Tools that operate at the TCP layer can't profile QUIC traffic, which runs over UDP. HTTP/3, WebTransport, and custom UDP protocols bypass the simulation entirely. And inserting a throttling proxy at a higher layer breaks connection multiplexing — QUIC congestion control needs to see conditions at the packet level to respond naturally, not have middleware artificially hold bytes in a buffer.
+2. **Root required, no domain scoping.** Network Link Conditioner and `comcast` operate at the kernel level (`dummynet`/`pfctl`) and require root. They shape all traffic system-wide — there's no easy way to scope simulation to specific domains while leaving the rest of your network unaffected.
 
 3. **Generic presets.** "Poor WiFi" is not a useful simulation target. GEO satellite on a Turkish Airlines transatlantic flight (870ms RTT, 690 Kbps) is fundamentally different from Viasat Ka-band on a JetBlue domestic hop (593ms RTT, 3.3 Mbps). Without presets calibrated from real flights, you're testing against conditions that don't exist.
 
 ## How AirplaneMode Works
 
-AirplaneMode profiles traffic at the UDP packet level — below QUIC, below HTTP/3. A local [MASQUE relay](https://www.rfc-editor.org/rfc/rfc9298) (HTTP/3 + CONNECT-UDP) sits between your apps and the internet. macOS routes matched-domain traffic through it via a `.mobileconfig` system profile, so **every app on the system** sees the profiled conditions — not just apps you've manually configured.
+AirplaneMode runs entirely in userspace — no root required. A local [MASQUE relay](https://www.rfc-editor.org/rfc/rfc9298) (HTTP/3 + CONNECT-UDP) profiles traffic at the UDP packet level, below QUIC and HTTP/3. A `.mobileconfig` system profile routes only matched-domain traffic through the relay, so **every app on the system** sees the profiled conditions for those domains while the rest of your network is unaffected.
 
 The relay wraps its UDP socket in a simulation layer (SimConn) that applies profiling to every packet independently:
 
@@ -33,9 +33,9 @@ Presets are calibrated from real inflight benchmarks — TLS handshake timing, d
 
 | Preset        | RTT    | Bandwidth | Loss | Jitter P99 | Source                                           |
 | ------------- | ------ | --------- | ---- | ---------- | ------------------------------------------------ |
-| `jetblue`     | ~296ms | 3.3 Mbps  | 0.5% | 1050ms     | JetBlue Viasat Ka-band (DEN PoP, domestic US)    |
-| `american`    | ~358ms | 4.2 Mbps  | 0.5% | 1400ms     | American Airlines Intelsat GEO (regional US)     |
-| `turkish-air` | ~435ms | 86 KB/s   | 0.5% | 2300ms     | Turkish Airlines Panasonic Ku-band GEO (JFK→IST) |
+| `jetblue`     | ~593ms | 3.3 Mbps  | 0.5% | 1050ms     | JetBlue Viasat Ka-band (DEN PoP, domestic US)    |
+| `american`    | ~715ms | 4.2 Mbps  | 0.5% | 763ms      | American Airlines Intelsat GEO (LGA→EYW)         |
+| `turkish-air` | ~870ms | 86 KB/s   | 0.5% | 2300ms     | Turkish Airlines Panasonic Ku-band GEO (JFK→IST) |
 
 You can also define custom profiles with arbitrary parameters via the menu bar app or CLI.
 
@@ -53,7 +53,6 @@ sudo ./scripts/flight-bench.sh descent
 This captures TLS handshake timing, bandwidth, traceroute, and packet loss across multiple targets. Output goes to `./traces/` as JSON (~28 KB each).
 
 Then [open a trace submission issue](../../issues/new?template=flight-trace.yml) and attach your files — we'll fit a profile from the data.
-
 
 ## Quick Start
 
