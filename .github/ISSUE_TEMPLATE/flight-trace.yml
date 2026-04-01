@@ -1,0 +1,50 @@
+name: Flight Trace Submission
+description: Submit network traces collected on a flight to help calibrate a new airline preset.
+title: "[Trace] AIRLINE — ROUTE"
+labels: ["trace"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for collecting data! Attach your trace JSON files below. The more traces from different phases of the flight, the better the profile calibration.
+
+        Run `sudo ./scripts/flight-bench.sh <label>` multiple times during your flight (e.g. takeoff, cruising-1h, cruising-3h, descent).
+  - type: input
+    id: airline
+    attributes:
+      label: Airline
+      placeholder: e.g. Delta, United, Emirates
+    validations:
+      required: true
+  - type: input
+    id: route
+    attributes:
+      label: Route
+      placeholder: e.g. JFK → LAX, LHR → NRT
+    validations:
+      required: true
+  - type: input
+    id: provider
+    attributes:
+      label: WiFi / satellite provider (if known)
+      description: Sometimes shown on the WiFi login page (e.g. Viasat, Panasonic, Intelsat, Gogo, Starlink).
+      placeholder: e.g. Viasat Ka-band, Panasonic Ku-band
+  - type: input
+    id: aircraft
+    attributes:
+      label: Aircraft type (if known)
+      placeholder: e.g. A321, 787-9, 737 MAX
+  - type: textarea
+    id: traces
+    attributes:
+      label: Trace files
+      description: Drag and drop your JSON trace files here. Include as many as you collected.
+      placeholder: Drag and drop .json files here
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Anything else notable — time of day, seat location, how many passengers seemed to be online, WiFi tier purchased, etc.
+      placeholder: Optional

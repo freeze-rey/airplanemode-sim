@@ -50,7 +50,9 @@ sudo ./scripts/flight-bench.sh cruising-3h
 sudo ./scripts/flight-bench.sh descent
 ```
 
-This captures TLS handshake timing, bandwidth, traceroute, and packet loss across multiple targets. Output goes to `./traces/` as JSON. Open an issue or PR with your trace files and we'll fit a profile from the data — include the airline, route, and satellite provider if you know it.
+This captures TLS handshake timing, bandwidth, traceroute, and packet loss across multiple targets. Output goes to `./traces/` as JSON (~28 KB each).
+
+Then [open a trace submission issue](../../issues/new?template=flight-trace.yml) and attach your files — we'll fit a profile from the data.
 
 
 ## Quick Start
